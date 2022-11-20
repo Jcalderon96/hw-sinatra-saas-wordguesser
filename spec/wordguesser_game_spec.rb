@@ -9,8 +9,8 @@ describe WordGuesserGame do
     end
   end
 
-  describe 'new', :pending => true do
-    it "takes a parameter and returns a WordGuesserGame object" do      
+  describe 'new' do
+    it "takes a parameter and returns a WordGuesserGame object" do
       @game = WordGuesserGame.new('glorp')
       expect(@game).to be_an_instance_of(WordGuesserGame)
       expect(@game.word).to eq('glorp')
@@ -19,7 +19,7 @@ describe WordGuesserGame do
     end
   end
 
-  describe 'guessing', :pending => true do
+  describe 'guessing' do
     context 'correctly' do
       before :each do
         @game = WordGuesserGame.new('garply')
@@ -105,7 +105,7 @@ describe WordGuesserGame do
   end
 
   describe 'game status' do
-    before :each do 
+    before :each do
       @game = WordGuesserGame.new('dog')
     end
     it 'should be win when all letters guessed', :pending => true do

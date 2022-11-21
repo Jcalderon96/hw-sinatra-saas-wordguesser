@@ -4,149 +4,57 @@ class WordGuesserGame
   # to make the tests in spec/wordguesser_game_spec.rb pass.
 
   # Get a word from remote "random word" service
-  attr_accessor :word,:guesses, :wrong_guesses , :word_with_guesses
+  attr_accessor :word
+  attr_accessor :guesses
+  attr_accessor :wrong_guesses
 
   def initialize(word)
-     
     @word = word
-    @guesses =''
+    @current_status = :play
+    @guesses = ""
     @wrong_guesses = ''
-   # @word_with_guesses = word
-    @word_with_guesses = '-' * @word.size()
   end
 
+  def check_win_or_lose
+    return @current_status
+  end
 
   def guess(letter)
-    validate(letter)
-    if !checkCorrect(letter)
-      addFalse(letter)
-      return false
-    end 
-    display()
-    return true
-  end  
+    def is_letter?(lookAhead)
+      # Helper function to check if the input is a letter
+      return lookAhead.match?(/[[:lower:]]/)
+    end
 
-  def checkCorrect(letter)
-    i=0
-    while i < word.size
-      if letter.downcase == @word[i].downcase 
-        if checkUsed(letter)
-         @guesses +=letter.downcase
-         return true
-        end 
+    if letter == nil
+      raise ArgumentError.new("Guess cannot be nil")
+    elsif letter == ""
+        raise ArgumentError.new("Guess must be nonempty")
+    elsif !letter.match?(/[[:alpha:]]/)
+      raise ArgumentError.new("Guess must be letter")
+    end
+
+    if !is_letter?(letter) or @guesses.include?(letter)\
+      or @wrong_guesses.include?(letter)
+      return FALSE
+    end
+
+    if @word.include?(letter)
+      @guesses += letter
+
+      for i in 0...@word.length
+        if @word[i] == letter
+          @word_with_guesses[i] = letter
+        end
       end
-      i += 1
-    end  
-    return false
+    else
+      @wrong_guesses += letter
+    end
+    return TRUE
   end
 
-  def checkUsed(letter)
-    j=0
-    while j<@guesses.size
-      if letter.downcase == @guesses[j].downcase
-        return false
-      end
-     j +=1 
-    end 
-    i=0
-    while i<@wrong_guesses.size
-      if letter.downcase == @wrong_guesses[i].downcase
-        return false
-      end
-     i +=1 
-    end 
-    return true;
+  def word_with_guesses
+    return @word.gsub(Regexp.new(@guesses.empty? ? '.' : '[^'+@guesses+']', Regexp::IGNORECASE) , '-')
   end
-
-  def addFalse(letter)
-    k=0
-    while k< @wrong_guesses.size
-      if letter.downcase == @wrong_guesses[k].downcase
-        return false
-      end
-     k +=1 
-    end 
-   @wrong_guesses+=letter.downcase  
-  return true    
-  end  
-
-  def display()
-    i=0
-    result=""
-    
-    while i < @word.size()
-      j=0
-      
-      while j < @guesses.size()
-         if @guesses[j] == @word[i]
-           # w=@word[i]
-            #@word_with_guesses.replaceAt(i,(@word[i]));
-          #  @word_with_guesses= setCharAt(@word_with_guesses,i,w.stringify());
-           # @word_with_guesses.insert i, @guesses[j]
-           result+=  @word[i]
-         
-         end 
-       j+=1
-      end
-     if result.size()<=i
-        result+="-"
-     end  
-     i +=1 
-    end 
-    @word_with_guesses=result
-  end  
-
-  def validate(letter)
-    if letter.nil?
-      raise ArgumentError.new("Only letters are allowed")
-    end  
-    unless letter.match?(/[[:alpha:]]/)
-      raise ArgumentError.new("Only letters are allowed")
-    end
-    
-  end 
-
-  def validateLetter(letter)
- 
-    unless letter.match?(/[[:alpha:]]/)
-      return false
-    end
-    return true
-  end 
-  
-  def  guess_several_letters(game, manyGuess)
-    @word = word
-    @guesses = guesses
-    @wrong_guesses= wrong_guesses
-    @word_with_guesses=  '-' * @word.size()
-    a =0
-    
-    while a< manyGuess.size
-       guess(manyGuess[a])
-       a+=1
-    end
-    display()
-    
-  end
-  def check_win_or_lose()
-    if @wrong_guesses.size()>6
-      return :lose
-    end  
-    if @word.size<2
-      return :play
-    end  
-    if @word_with_guesses == @word
-      return :win
-    end  
-  #  i =0
-  # while i< @word.size()
-  #  if @word_with_guesses[i]== '-'
-  #    return :play
- #   end  
- #   i+=0 
- #  end 
-   return :play
-  end  
   # You can test it by installing irb via $ gem install irb
   # and then running $ irb -I. -r app.rb
   # And then in the irb: irb(main):001:0> WordGuesserGame.get_random_word
@@ -158,9 +66,6 @@ class WordGuesserGame
     Net::HTTP.new('randomword.saasbook.info').start { |http|
       return http.post(uri, "").body
     }
-  
- 
   end
+
 end
-
-

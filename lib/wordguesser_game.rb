@@ -4,57 +4,72 @@ class WordGuesserGame
   # to make the tests in spec/wordguesser_game_spec.rb pass.
 
   # Get a word from remote "random word" service
-  attr_accessor :word
-  attr_accessor :guesses
-  attr_accessor :wrong_guesses
 
-  def initialize(word)
+  def initialize(word) #constructor
     @word = word
-    @current_status = :play
-    @guesses = ""
+    @wordArr = @word.split('')
+    @guesses = ''
     @wrong_guesses = ''
   end
 
-  def check_win_or_lose
-    return @current_status
+  def word #get word
+    return @word
   end
 
-  def guess(letter)
-    def is_letter?(lookAhead)
-      # Helper function to check if the input is a letter
-      return lookAhead.match?(/[[:lower:]]/)
+  def guesses #get guesses
+    return @guesses
+  end
+
+  def wrong_guesses #get wrong guesses
+    return @wrong_guesses
+  end
+
+  def guess g #make a guess with a character g
+    raise ArgumentError if g == nil
+    raise ArgumentError if g.empty? #if g is empty string, throw argument error
+    raise ArgumentError if (g.ord < 65 or g.ord > 90) and (g.ord < 97 or g.ord > 122) #if g is not an ascii letter (A-Z, a-z), throw argument error
+    #if guess character is already in the guesses or wrong guesses string, do not add character to anything
+    #downcase g for case insensitivity
+    if @guesses.include? g.downcase or @wrong_guesses.include? g.downcase 
+      return false
+    elsif @word.include? g #if guess character is in the word, add to guesses
+      @guesses += g
+    else
+      @wrong_guesses += g #if guess character is not in the word, add to wrong guesses
     end
+  end
 
-    if letter == nil
-      raise ArgumentError.new("Guess cannot be nil")
-    elsif letter == ""
-        raise ArgumentError.new("Guess must be nonempty")
-    elsif !letter.match?(/[[:alpha:]]/)
-      raise ArgumentError.new("Guess must be letter")
-    end
-
-    if !is_letter?(letter) or @guesses.include?(letter)\
-      or @wrong_guesses.include?(letter)
-      return FALSE
-    end
-
-    if @word.include?(letter)
-      @guesses += letter
-
-      for i in 0...@word.length
-        if @word[i] == letter
-          @word_with_guesses[i] = letter
+  def word_with_guesses #display word as the user sees it, with blanks in spots that have not been guessed
+    @wordCensored = ""
+    @guessesArr = @guesses.split('')
+    @charAdded = false
+    for i in @wordArr do
+      for j in @guessesArr do
+        if i == j
+          @charAdded = true
+          @wordCensored += i
+          break
         end
       end
-    else
-      @wrong_guesses += letter
+      if @charAdded == false
+        @wordCensored += "-"
+      end
+      @charAdded = false
     end
-    return TRUE
+    return @wordCensored
   end
 
-  def word_with_guesses
-    return @word.gsub(Regexp.new(@guesses.empty? ? '.' : '[^'+@guesses+']', Regexp::IGNORECASE) , '-')
+  def check_win_or_lose
+    @finalGuessWord = word_with_guesses
+    if @finalGuessWord == @word
+      return :win
+    elsif @wrong_guesses.length >= 7
+      return :lose
+    else
+      return :play
+    end
   end
+
   # You can test it by installing irb via $ gem install irb
   # and then running $ irb -I. -r app.rb
   # And then in the irb: irb(main):001:0> WordGuesserGame.get_random_word
@@ -69,3 +84,10 @@ class WordGuesserGame
   end
 
 end
+
+# @game = WordGuesserGame.new('foobar')
+# @game.guess('a')
+# @game.guess('z')
+# @game.guess('x')
+# @game.guess('o')
+# puts @game.word_with_guesses

@@ -1,73 +1,17 @@
 class WordGuesserGame
 
+  attr_accessor :word
+  attr_accessor :guesses
+  attr_accessor :wrong_guesses
   # add the necessary class methods, attributes, etc. here
   # to make the tests in spec/wordguesser_game_spec.rb pass.
 
   # Get a word from remote "random word" service
 
-  def initialize(word) #constructor
+  def initialize(word)
     @word = word
-    @wordArr = @word.split('')
-    @guesses = ''
-    @wrong_guesses = ''
-  end
-
-  def word #get word
-    return @word
-  end
-
-  def guesses #get guesses
-    return @guesses
-  end
-
-  def wrong_guesses #get wrong guesses
-    return @wrong_guesses
-  end
-
-  def guess g #make a guess with a character g
-    raise ArgumentError if g == nil
-    raise ArgumentError if g.empty? #if g is empty string, throw argument error
-    raise ArgumentError if (g.ord < 65 or g.ord > 90) and (g.ord < 97 or g.ord > 122) #if g is not an ascii letter (A-Z, a-z), throw argument error
-    #if guess character is already in the guesses or wrong guesses string, do not add character to anything
-    #downcase g for case insensitivity
-    if @guesses.include? g.downcase or @wrong_guesses.include? g.downcase 
-      return false
-    elsif @word.include? g #if guess character is in the word, add to guesses
-      @guesses += g
-    else
-      @wrong_guesses += g #if guess character is not in the word, add to wrong guesses
-    end
-  end
-
-  def word_with_guesses #display word as the user sees it, with blanks in spots that have not been guessed
-    @wordCensored = ""
-    @guessesArr = @guesses.split('')
-    @charAdded = false
-    for i in @wordArr do
-      for j in @guessesArr do
-        if i == j
-          @charAdded = true
-          @wordCensored += i
-          break
-        end
-      end
-      if @charAdded == false
-        @wordCensored += "-"
-      end
-      @charAdded = false
-    end
-    return @wordCensored
-  end
-
-  def check_win_or_lose
-    @finalGuessWord = word_with_guesses
-    if @finalGuessWord == @word
-      return :win
-    elsif @wrong_guesses.length >= 7
-      return :lose
-    else
-      return :play
-    end
+    @guesses=""
+    @wrong_guesses=""
   end
 
   # You can test it by installing irb via $ gem install irb
@@ -83,11 +27,54 @@ class WordGuesserGame
     }
   end
 
-end
+  # guess函数实现以下功能：
+  # 1.判断输入的字符是否合法
+  # 2.大小写不敏感-》将大写字母转成小写字母
+  # 3.把猜对的字母添加进guesses列表中,猜错的字母添加进wrong_guesses列表中，返回true
+  # 4.重复的字母返回false
+  def guess(ch)
+    unless ch =~ /[a-zA-Z]/
+      raise ArgumentError
+    end
+    ch = ch.downcase
 
-# @game = WordGuesserGame.new('foobar')
-# @game.guess('a')
-# @game.guess('z')
-# @game.guess('x')
-# @game.guess('o')
-# puts @game.word_with_guesses
+    if @word.include? ch and !(@guesses.include? ch)
+        @guesses << ch
+        true
+    elsif !(@word.include? ch) and !(@wrong_guesses.include? ch)
+      @wrong_guesses << ch
+      true
+    elsif (@guesses.include? ch) or (@wrong_guesses.include? ch)
+      false
+    end
+  end
+
+  # word_with_guesses函数实现以下功能：
+  # 将每一轮的猜词结果存入display_guesses，word中猜对的字母显示，其他字母用-表示
+  def word_with_guesses
+    display_guesses = ""
+    @word.chars do |letter|
+      if @guesses.include? letter
+        display_guesses << letter
+      else
+        display_guesses << '-'
+      end
+    end
+    display_guesses
+  end
+
+  # check_win_or_lose实现以下功能：
+  # 1.全部猜对返回:win
+  # 2.猜错字母数达到7返回:lose
+  # 3.不是1/2继续进行游戏，返回:play
+  def check_win_or_lose
+    if self.word_with_guesses == @word
+      :win
+    elsif @wrong_guesses.length >=7
+      :lose
+    else
+      :play
+    end
+  end
+
+end

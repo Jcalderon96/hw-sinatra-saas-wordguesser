@@ -39,7 +39,7 @@ class WordGuesserApp < Sinatra::Base
     letter = params[:guess].to_s[0]
    
      begin
-      if !@game.checkUsed(letter)
+      if !@game.usedLetter(letter)
         flash[:message] = 'You have already used that letter.'
       end  
     
